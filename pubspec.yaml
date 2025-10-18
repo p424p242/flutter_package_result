@@ -1,6 +1,6 @@
 name: result
 description: A functional programming Result type for Dart and Flutter with pattern matching support.
-version: 1.0.0
+version: 1.1.0
 repository: https://github.com/p424p424/flutter_pkg_result
 
 publish_to: none

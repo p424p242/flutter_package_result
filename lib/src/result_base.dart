@@ -1,4 +1,7 @@
-/// Alias for async results returning [Result].
+/// Alias for asynchronous operations that return a [Result].
+///
+/// This typedef simplifies the declaration of functions that might
+/// succeed with a value of type [T] or fail with an error of type [E].
 ///
 /// Example:
 /// ```dart
@@ -6,31 +9,30 @@
 /// ```
 typedef AsyncResult<T, E> = Future<Result<T, E>>;
 
-/// Sealed result type: success ([Ok]) or failure ([Error]).
+/// A sealed class representing either a successful outcome ([Ok])
+/// or a failure with an error ([Error]).
 ///
-/// 💡 Tip: Use switch for pattern matching.
+/// This type is inspired by functional programming concepts for explicit
+/// error handling, promoting type safety and reducing the need for exceptions.
 ///
-/// Example:
-/// ```dart
-/// switch (result) {
-///   case Ok(:final value): print(value);
-///   case Error(:final error): print(error);
-/// }
-/// ```
+/// 💡 Tip: While `switch` statements can be used for pattern matching,
+/// consider using the extension methods (e.g., `map`, `mapError`, `fold`, `tap`)
+/// provided in `package:result/result_extensions.dart` for a more
+/// functional and chainable approach to handling [Result] instances.
 sealed class Result<O, E> {}
 
-/// Success result with value.
+/// Represents a successful outcome containing a [value] of type [O].
 class Ok<O, E> extends Result<O, E> {
-  /// Creates success with [value].
+  /// Creates a successful [Result] with the given [value].
   Ok(this.value);
 
-  /// The success value.
+  /// The successful value.
   final O value;
 }
 
-/// Failure result with error.
+/// Represents a failed outcome containing an [error] of type [E].
 class Error<O, E> extends Result<O, E> {
-  /// Creates failure with [error].
+  /// Creates a failed [Result] with the given [error].
   Error(this.error);
 
   /// The error value.

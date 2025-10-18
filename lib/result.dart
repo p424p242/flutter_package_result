@@ -1,8 +1,9 @@
-/// Support for doing something awesome.
+/// A Dart package providing a functional Result type for error handling.
 ///
-/// More dartdocs go here.
-library;
+/// This library exports the core [Result] type, along with [Ok] for success
+/// and [Error] for failure, enabling robust and explicit error management
+/// in a type-safe manner.
+library result;
 
 export 'src/result_base.dart';
-
-// TODO: Export any libraries intended for clients of this package.
+export 'result_extensions.dart';

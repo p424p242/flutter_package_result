@@ -1,4 +1,4 @@
-import 'package:flutter_package_result/result.dart';
+import 'result.dart';
 
 /// Extension methods for the [Result] type, providing a more functional API.
 ///
@@ -54,6 +54,13 @@ extension ResultExtensions<O, E> on Result<O, E> {
     }
   }
 
+  /// Alias for [andThen], chains a [Result]-returning function to the current [Result].
+  ///
+  /// If the result is [Ok], applies the [op] function to the contained value
+  /// and returns the new [Result].
+  /// If the result is [Error], the original [Error] is propagated.
+  Result<O2, E> flatMap<O2>(Result<O2, E> Function(O) op) => andThen(op);
+
   /// Chains a [Result]-returning function to the current [Result] for the error case.
   ///
   /// If the result is [Error], applies the [op] function to the contained error
@@ -74,7 +81,9 @@ extension ResultExtensions<O, E> on Result<O, E> {
     if (this is Ok<O, E>) {
       return (this as Ok<O, E>).value;
     } else {
-      throw Exception('Called `unwrap()` on an `Error` value: ${(this as Error<O, E>).error}');
+      throw Exception(
+        'Called `unwrap()` on an `Error` value: ${(this as Error<O, E>).error}',
+      );
     }
   }
 
@@ -85,7 +94,9 @@ extension ResultExtensions<O, E> on Result<O, E> {
     if (this is Error<O, E>) {
       return (this as Error<O, E>).error;
     } else {
-      throw Exception('Called `unwrapError()` on an `Ok` value: ${(this as Ok<O, E>).value}');
+      throw Exception(
+        'Called `unwrapError()` on an `Ok` value: ${(this as Ok<O, E>).value}',
+      );
     }
   }
 
@@ -98,6 +109,106 @@ extension ResultExtensions<O, E> on Result<O, E> {
       return okOp((this as Ok<O, E>).value);
     } else {
       return errorOp((this as Error<O, E>).error);
+    }
+  }
+
+  /// Performs a side effect if the result is [Ok].
+  ///
+  /// Applies the [op] function to the contained value without transforming it.
+  /// Returns the original [Result].
+  Result<O, E> tap(void Function(O) op) {
+    if (this is Ok<O, E>) {
+      op((this as Ok<O, E>).value);
+    }
+    return this;
+  }
+
+  /// Performs a side effect if the result is [Error].
+  ///
+  /// Applies the [op] function to the contained error without transforming it.
+  /// Returns the original [Result].
+  Result<O, E> tapError(void Function(E) op) {
+    if (this is Error<O, E>) {
+      op((this as Error<O, E>).error);
+    }
+    return this;
+  }
+
+  /// Performs a side effect if the result is [Ok].
+  ///
+  /// Applies the [op] function to the contained value.
+  /// Returns the original [Result].
+  Result<O, E> onOk(void Function(O) op) {
+    if (this is Ok<O, E>) {
+      op((this as Ok<O, E>).value);
+    }
+    return this;
+  }
+
+  /// Performs a side effect if the result is [Error].
+  ///
+  /// Applies the [op] function to the contained error.
+  /// Returns the original [Result].
+  Result<O, E> onError(void Function(E) op) {
+    if (this is Error<O, E>) {
+      op((this as Error<O, E>).error);
+    }
+    return this;
+  }
+
+  /// Returns the contained [Ok] value or computes a default from the [Error] value.
+  ///
+  /// If the result is [Ok], returns the contained value.
+  /// If the result is [Error], applies the [orElse] function to the contained error
+  /// and returns the result of that function.
+  O getOrElse(O Function(E) orElse) {
+    if (this is Ok<O, E>) {
+      return (this as Ok<O, E>).value;
+    } else {
+      return orElse((this as Error<O, E>).error);
+    }
+  }
+
+  /// Returns the contained [Ok] value if present, otherwise `null`.
+  O? getOrNull() {
+    if (this is Ok<O, E>) {
+      return (this as Ok<O, E>).value;
+    }
+    return null;
+  }
+
+  /// Returns the contained [Error] value if present, otherwise `null`.
+  E? errorOrNull() {
+    if (this is Error<O, E>) {
+      return (this as Error<O, E>).error;
+    }
+    return null;
+  }
+
+  /// Swaps the [Ok] and [Error] types.
+  ///
+  /// An [Ok<O, E>] becomes [Error<E, O>].
+  /// An [Error<O, E>] becomes [Ok<E, O>].
+  Result<E, O> swap() {
+    if (this is Ok<O, E>) {
+      return Error((this as Ok<O, E>).value as O);
+    } else {
+      return Ok((this as Error<O, E>).error as E);
+    }
+  }
+}
+
+extension ResultFlattenExtension<O2, E> on Result<Result<O2, E>, E> {
+  /// Flattens a nested [Result].
+  ///
+  /// If the current [Result] is [Ok] and contains another [Result],
+  /// it returns the inner [Result]. Otherwise, it returns the current [Result].
+  Result<O2, E> flatten() {
+    if (this is Ok<Result<O2, E>, E>) {
+      return (this as Ok<Result<O2, E>, E>).value;
+    } else {
+      // If it's an Error, the outer error is propagated.
+      return Error((this as Error<Result<O2, E>, E>).error);
     }
   }
 }
