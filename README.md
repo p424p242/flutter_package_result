@@ -121,7 +121,7 @@ void main() async {
   final value = result1.getOrElse((error) => 'Default Value');
   print('Value: $value'); // Value: Processed: Positive: 5
 }
-
+```
 
 ## Additional information
 
