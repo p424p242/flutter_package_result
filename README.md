@@ -15,7 +15,7 @@ Add the package to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  result: ^1.1.0
+  result: ^1.2.0
 ```
 
 ## Usage
@@ -130,3 +130,7 @@ This package provides a functional programming approach to error handling in Dar
 - **Repository**: https://github.com/p424p424/flutter_pkg_result
 - **Issues**: Please file issues on the GitHub repository
 - **Contributions**: Pull requests are welcome!
+
+### 📖 Comprehensive Usage Guide
+
+For detailed usage instructions, best practices, and real-world examples, see the [CLAUDE.md](CLAUDE.md) guide.

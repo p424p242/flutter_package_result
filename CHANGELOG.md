@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.2.0
+
+- **Improved type safety**: Replaced unsafe type casts with pattern matching in all extension methods
+- **Removed unused dependency**: Removed `copy_with_extension_gen` from dev dependencies
+- **Enhanced documentation**: Added comprehensive `CLAUDE.md` usage guide emphasizing extension methods over pattern matching
+- **Performance improvements**: All extension methods now use Dart 3 pattern matching for better performance and type safety
+
 ## 1.1.0
 
 - Added `ResultExtensions` with new extension methods:

@@ -21,11 +21,10 @@ extension ResultExtensions<O, E> on Result<O, E> {
   /// and returns a new [Ok] containing the result of the function.
   /// If the result is [Error], the original [Error] is propagated.
   Result<O2, E> map<O2>(O2 Function(O) op) {
-    if (this is Ok<O, E>) {
-      return Ok(op((this as Ok<O, E>).value));
-    } else {
-      return Error((this as Error<O, E>).error);
-    }
+    return switch (this) {
+      Ok(:final value) => Ok(op(value)),
+      Error(:final error) => Error(error),
+    };
   }
 
   /// Maps an [Error] value to a new [Result] with a different error type.
@@ -34,11 +33,10 @@ extension ResultExtensions<O, E> on Result<O, E> {
   /// and returns a new [Error] containing the result of the function.
   /// If the result is [Ok], the original [Ok] is propagated.
   Result<O, E2> mapError<E2>(E2 Function(E) op) {
-    if (this is Error<O, E>) {
-      return Error(op((this as Error<O, E>).error));
-    } else {
-      return Ok((this as Ok<O, E>).value);
-    }
+    return switch (this) {
+      Ok(:final value) => Ok(value),
+      Error(:final error) => Error(op(error)),
+    };
   }
 
   /// Chains a [Result]-returning function to the current [Result].
@@ -47,11 +45,10 @@ extension ResultExtensions<O, E> on Result<O, E> {
   /// and returns the new [Result].
   /// If the result is [Error], the original [Error] is propagated.
   Result<O2, E> andThen<O2>(Result<O2, E> Function(O) op) {
-    if (this is Ok<O, E>) {
-      return op((this as Ok<O, E>).value);
-    } else {
-      return Error((this as Error<O, E>).error);
-    }
+    return switch (this) {
+      Ok(:final value) => op(value),
+      Error(:final error) => Error(error),
+    };
   }
 
   /// Alias for [andThen], chains a [Result]-returning function to the current [Result].
@@ -67,37 +64,30 @@ extension ResultExtensions<O, E> on Result<O, E> {
   /// and returns the new [Result].
   /// If the result is [Ok], the original [Ok] is propagated.
   Result<O, E2> orElse<E2>(Result<O, E2> Function(E) op) {
-    if (this is Error<O, E>) {
-      return op((this as Error<O, E>).error);
-    } else {
-      return Ok((this as Ok<O, E>).value);
-    }
+    return switch (this) {
+      Ok(:final value) => Ok(value),
+      Error(:final error) => op(error),
+    };
   }
 
   /// Unwraps the [Ok] value.
   ///
   /// Returns the contained [Ok] value. Throws an [Exception] if the result is [Error].
   O unwrap() {
-    if (this is Ok<O, E>) {
-      return (this as Ok<O, E>).value;
-    } else {
-      throw Exception(
-        'Called `unwrap()` on an `Error` value: ${(this as Error<O, E>).error}',
-      );
-    }
+    return switch (this) {
+      Ok(:final value) => value,
+      Error(:final error) => throw Exception('Called `unwrap()` on an `Error` value: $error'),
+    };
   }
 
   /// Unwraps the [Error] value.
   ///
   /// Returns the contained [Error] value. Throws an [Exception] if the result is [Ok].
   E unwrapError() {
-    if (this is Error<O, E>) {
-      return (this as Error<O, E>).error;
-    } else {
-      throw Exception(
-        'Called `unwrapError()` on an `Ok` value: ${(this as Ok<O, E>).value}',
-      );
-    }
+    return switch (this) {
+      Ok(:final value) => throw Exception('Called `unwrapError()` on an `Ok` value: $value'),
+      Error(:final error) => error,
+    };
   }
 
   /// Folds the [Result] into a single value by applying one of two functions.
@@ -105,11 +95,10 @@ extension ResultExtensions<O, E> on Result<O, E> {
   /// If the result is [Ok], applies [okOp] to the contained value.
   /// If the result is [Error], applies [errorOp] to the contained error.
   T2 fold<T2>(T2 Function(O) okOp, T2 Function(E) errorOp) {
-    if (this is Ok<O, E>) {
-      return okOp((this as Ok<O, E>).value);
-    } else {
-      return errorOp((this as Error<O, E>).error);
-    }
+    return switch (this) {
+      Ok(:final value) => okOp(value),
+      Error(:final error) => errorOp(error),
+    };
   }
 
   /// Performs a side effect if the result is [Ok].
@@ -117,8 +106,11 @@ extension ResultExtensions<O, E> on Result<O, E> {
   /// Applies the [op] function to the contained value without transforming it.
   /// Returns the original [Result].
   Result<O, E> tap(void Function(O) op) {
-    if (this is Ok<O, E>) {
-      op((this as Ok<O, E>).value);
+    switch (this) {
+      case Ok(:final value):
+        op(value);
+      case Error():
+        break;
     }
     return this;
   }
@@ -128,8 +120,11 @@ extension ResultExtensions<O, E> on Result<O, E> {
   /// Applies the [op] function to the contained error without transforming it.
   /// Returns the original [Result].
   Result<O, E> tapError(void Function(E) op) {
-    if (this is Error<O, E>) {
-      op((this as Error<O, E>).error);
+    switch (this) {
+      case Ok():
+        break;
+      case Error(:final error):
+        op(error);
     }
     return this;
   }
@@ -139,8 +134,11 @@ extension ResultExtensions<O, E> on Result<O, E> {
   /// Applies the [op] function to the contained value.
   /// Returns the original [Result].
   Result<O, E> onOk(void Function(O) op) {
-    if (this is Ok<O, E>) {
-      op((this as Ok<O, E>).value);
+    switch (this) {
+      case Ok(:final value):
+        op(value);
+      case Error():
+        break;
     }
     return this;
   }
@@ -150,8 +148,11 @@ extension ResultExtensions<O, E> on Result<O, E> {
   /// Applies the [op] function to the contained error.
   /// Returns the original [Result].
   Result<O, E> onError(void Function(E) op) {
-    if (this is Error<O, E>) {
-      op((this as Error<O, E>).error);
+    switch (this) {
+      case Ok():
+        break;
+      case Error(:final error):
+        op(error);
     }
     return this;
   }
@@ -162,27 +163,26 @@ extension ResultExtensions<O, E> on Result<O, E> {
   /// If the result is [Error], applies the [orElse] function to the contained error
   /// and returns the result of that function.
   O getOrElse(O Function(E) orElse) {
-    if (this is Ok<O, E>) {
-      return (this as Ok<O, E>).value;
-    } else {
-      return orElse((this as Error<O, E>).error);
-    }
+    return switch (this) {
+      Ok(:final value) => value,
+      Error(:final error) => orElse(error),
+    };
   }
 
   /// Returns the contained [Ok] value if present, otherwise `null`.
   O? getOrNull() {
-    if (this is Ok<O, E>) {
-      return (this as Ok<O, E>).value;
-    }
-    return null;
+    return switch (this) {
+      Ok(:final value) => value,
+      Error() => null,
+    };
   }
 
   /// Returns the contained [Error] value if present, otherwise `null`.
   E? errorOrNull() {
-    if (this is Error<O, E>) {
-      return (this as Error<O, E>).error;
-    }
-    return null;
+    return switch (this) {
+      Ok() => null,
+      Error(:final error) => error,
+    };
   }
 
   /// Swaps the [Ok] and [Error] types.
@@ -190,11 +190,10 @@ extension ResultExtensions<O, E> on Result<O, E> {
   /// An [Ok<O, E>] becomes [Error<E, O>].
   /// An [Error<O, E>] becomes [Ok<E, O>].
   Result<E, O> swap() {
-    if (this is Ok<O, E>) {
-      return Error((this as Ok<O, E>).value as O);
-    } else {
-      return Ok((this as Error<O, E>).error as E);
-    }
+    return switch (this) {
+      Ok(:final value) => Error(value),
+      Error(:final error) => Ok(error),
+    };
   }
 }
 
@@ -204,11 +203,9 @@ extension ResultFlattenExtension<O2, E> on Result<Result<O2, E>, E> {
   /// If the current [Result] is [Ok] and contains another [Result],
   /// it returns the inner [Result]. Otherwise, it returns the current [Result].
   Result<O2, E> flatten() {
-    if (this is Ok<Result<O2, E>, E>) {
-      return (this as Ok<Result<O2, E>, E>).value;
-    } else {
-      // If it's an Error, the outer error is propagated.
-      return Error((this as Error<Result<O2, E>, E>).error);
-    }
+    return switch (this) {
+      Ok(:final value) => value,
+      Error(:final error) => Error(error),
+    };
   }
 }
